@@ -66,21 +66,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sgem.wsgi.application'
 
-# Banco de dados: MySQL em produção, SQLite em dev
+# Banco de dados: PostgreSQL em produção, SQLite em dev
 DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
 
-if DB_ENGINE == 'django.db.backends.mysql':
+if DB_ENGINE == 'django.db.backends.postgresql':
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('DB_NAME', 'sgem_caruaru'),
-            'USER': os.environ.get('DB_USER', 'root'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '3306'),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-            },
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 else:
