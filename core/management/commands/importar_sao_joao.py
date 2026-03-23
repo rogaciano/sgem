@@ -5,7 +5,7 @@ Cria: Evento, 3 Polos, todas as Atrações e Contratos com horários escalonados
 import datetime
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from core.models import Evento, Polo, Atracao, Contrato
+from core.models import Evento, Polo, Atracao, Contrato, SlotProgramacao
 
 # ---------------------------------------------------------------------------
 # DADOS DA PROGRAMAÇÃO
@@ -341,6 +341,36 @@ class Command(BaseCommand):
             f'   🎤 {total_atracoes} atrações criadas\n'
             f'   📋 {total_contratos} contratos criados\n'
             f'   ⚠️  {conflitos} conflito(s) ignorado(s)\n'
-            f'\n   ℹ️  Horários marcados como 19:00–20:30, 20:30–22:00, etc.\n'
+        ))
+
+        # 4. Criar slots a partir dos contratos do evento
+        self.stdout.write('\n🔲 Gerando slots de programação...')
+        slots_criados = slots_ignorados = 0
+        for c in Contrato.objects.filter(evento=evento).select_related('evento', 'polo'):
+            slot, created = SlotProgramacao.objects.get_or_create(
+                evento=c.evento,
+                polo=c.polo,
+                data=c.data,
+                horario_inicio=c.horario_inicio,
+                defaults={
+                    'horario_fim': c.horario_fim,
+                    'contrato': c,
+                }
+            )
+            if created:
+                slots_criados += 1
+            else:
+                if not slot.contrato_id:
+                    slot.contrato = c
+                    slot.horario_fim = c.horario_fim
+                    slot.save(update_fields=['contrato', 'horario_fim'])
+                    slots_criados += 1
+                else:
+                    slots_ignorados += 1
+
+        self.stdout.write(self.style.SUCCESS(
+            f'   🔲 {slots_criados} slot(s) criado(s)\n'
+            f'   ⏭️  {slots_ignorados} já existiam\n'
+            f'\n   ℹ️  Horários marcados como 17:00–18:30, 18:30–20:00, etc.\n'
             f'      Edite os contratos para ajustar os horários reais.'
         ))
