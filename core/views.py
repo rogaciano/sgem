@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import get_template
@@ -14,6 +15,7 @@ from .filters import ContratoFilter, AtracaoFilter, PoloFilter, EventoFilter
 # API: Calendário
 # ---------------------------------------------------------------------------
 
+@login_required
 def calendario_json(request):
     """Retorna contratos no formato FullCalendar — cores por polo."""
     import json
@@ -52,6 +54,7 @@ def calendario_json(request):
     return JsonResponse(eventos_cal, safe=False)
 
 
+@login_required
 def calendario_view(request):
     """Página dedicada do calendário com filtros por polo."""
     import json
@@ -80,6 +83,7 @@ def calendario_view(request):
     })
 
 
+@login_required
 def programacao_view(request):
     """Visão de programação agrupada por data — cada data mostra suas atrações com gauge visual."""
     from collections import defaultdict
@@ -124,6 +128,7 @@ def programacao_view(request):
 # Dashboard
 # ---------------------------------------------------------------------------
 
+@login_required
 def dashboard(request):
     import json
     total_eventos = Evento.objects.count()
@@ -213,6 +218,7 @@ def dashboard(request):
 # Pessoa
 # ---------------------------------------------------------------------------
 
+@login_required
 def pessoa_list(request):
     qs = Pessoa.objects.all()
     q = request.GET.get('q', '')
@@ -221,6 +227,7 @@ def pessoa_list(request):
     return render(request, 'core/pessoa/list.html', {'pessoas': qs, 'q': q})
 
 
+@login_required
 def pessoa_create(request):
     form = PessoaForm(request.POST or None)
     if form.is_valid():
@@ -230,11 +237,13 @@ def pessoa_create(request):
     return render(request, 'core/pessoa/form.html', {'form': form, 'titulo': 'Nova Pessoa'})
 
 
+@login_required
 def pessoa_detail(request, pk):
     obj = get_object_or_404(Pessoa, pk=pk)
     return render(request, 'core/pessoa/detail.html', {'obj': obj})
 
 
+@login_required
 def pessoa_update(request, pk):
     obj = get_object_or_404(Pessoa, pk=pk)
     form = PessoaForm(request.POST or None, instance=obj)
@@ -245,6 +254,7 @@ def pessoa_update(request, pk):
     return render(request, 'core/pessoa/form.html', {'form': form, 'titulo': 'Editar Pessoa', 'obj': obj})
 
 
+@login_required
 def pessoa_delete(request, pk):
     obj = get_object_or_404(Pessoa, pk=pk)
     if request.method == 'POST':
@@ -258,6 +268,7 @@ def pessoa_delete(request, pk):
 # Evento
 # ---------------------------------------------------------------------------
 
+@login_required
 def evento_list(request):
     qs = Evento.objects.all()
     filtro = EventoFilter(request.GET, queryset=qs)
@@ -270,6 +281,7 @@ def evento_list(request):
     })
 
 
+@login_required
 def evento_create(request):
     form = EventoForm(request.POST or None)
     if form.is_valid():
@@ -279,6 +291,7 @@ def evento_create(request):
     return render(request, 'core/evento/form.html', {'form': form, 'titulo': 'Novo Evento'})
 
 
+@login_required
 def evento_detail(request, pk):
     obj = get_object_or_404(Evento, pk=pk)
     contratos = obj.contrato_set.select_related('polo', 'atracao').order_by('data', 'horario_inicio')
@@ -293,6 +306,7 @@ def evento_detail(request, pk):
     })
 
 
+@login_required
 def evento_update(request, pk):
     obj = get_object_or_404(Evento, pk=pk)
     form = EventoForm(request.POST or None, instance=obj)
@@ -303,6 +317,7 @@ def evento_update(request, pk):
     return render(request, 'core/evento/form.html', {'form': form, 'titulo': 'Editar Evento', 'obj': obj})
 
 
+@login_required
 def evento_delete(request, pk):
     obj = get_object_or_404(Evento, pk=pk)
     if request.method == 'POST':
@@ -316,12 +331,14 @@ def evento_delete(request, pk):
 # Polo
 # ---------------------------------------------------------------------------
 
+@login_required
 def polo_list(request):
     qs = Polo.objects.select_related('responsavel')
     filtro = PoloFilter(request.GET, queryset=qs)
     return render(request, 'core/polo/list.html', {'filter': filtro})
 
 
+@login_required
 def polo_create(request):
     form = PoloForm(request.POST or None)
     if form.is_valid():
@@ -331,12 +348,14 @@ def polo_create(request):
     return render(request, 'core/polo/form.html', {'form': form, 'titulo': 'Novo Polo'})
 
 
+@login_required
 def polo_detail(request, pk):
     obj = get_object_or_404(Polo, pk=pk)
     contratos = obj.contrato_set.select_related('evento', 'atracao').order_by('data', 'horario_inicio')
     return render(request, 'core/polo/detail.html', {'obj': obj, 'contratos': contratos})
 
 
+@login_required
 def polo_update(request, pk):
     obj = get_object_or_404(Polo, pk=pk)
     form = PoloForm(request.POST or None, instance=obj)
@@ -347,6 +366,7 @@ def polo_update(request, pk):
     return render(request, 'core/polo/form.html', {'form': form, 'titulo': 'Editar Polo', 'obj': obj})
 
 
+@login_required
 def polo_delete(request, pk):
     obj = get_object_or_404(Polo, pk=pk)
     if request.method == 'POST':
@@ -360,6 +380,7 @@ def polo_delete(request, pk):
 # Atração
 # ---------------------------------------------------------------------------
 
+@login_required
 def atracao_list(request):
     qs = Atracao.objects.all()
     filtro = AtracaoFilter(request.GET, queryset=qs)
@@ -371,6 +392,7 @@ def atracao_list(request):
     })
 
 
+@login_required
 def atracao_create(request):
     form = AtracaoForm(request.POST or None)
     if form.is_valid():
@@ -380,12 +402,14 @@ def atracao_create(request):
     return render(request, 'core/atracao/form.html', {'form': form, 'titulo': 'Nova Atração'})
 
 
+@login_required
 def atracao_detail(request, pk):
     obj = get_object_or_404(Atracao, pk=pk)
     contratos = obj.contrato_set.select_related('evento', 'polo').order_by('data', 'horario_inicio')
     return render(request, 'core/atracao/detail.html', {'obj': obj, 'contratos': contratos})
 
 
+@login_required
 def atracao_update(request, pk):
     obj = get_object_or_404(Atracao, pk=pk)
     form = AtracaoForm(request.POST or None, instance=obj)
@@ -396,6 +420,7 @@ def atracao_update(request, pk):
     return render(request, 'core/atracao/form.html', {'form': form, 'titulo': 'Editar Atração', 'obj': obj})
 
 
+@login_required
 def atracao_delete(request, pk):
     obj = get_object_or_404(Atracao, pk=pk)
     if request.method == 'POST':
@@ -405,6 +430,7 @@ def atracao_delete(request, pk):
     return redirect('atracao_list')
 
 
+@login_required
 def atracao_create_ajax(request):
     """Endpoint para cadastro rápido de Atração via modal no formulário de Contrato.
     Retorna JSON {id, text} em caso de sucesso, ou {errors} em caso de erro."""
@@ -427,6 +453,7 @@ def atracao_create_ajax(request):
 # Contrato
 # ---------------------------------------------------------------------------
 
+@login_required
 def contrato_list(request):
     qs = Contrato.objects.select_related('evento', 'polo', 'atracao')
     filtro = ContratoFilter(request.GET, queryset=qs)
@@ -437,6 +464,7 @@ def contrato_list(request):
     })
 
 
+@login_required
 def contrato_create(request):
     form = ContratoForm(request.POST or None)
     if form.is_valid():
@@ -449,11 +477,13 @@ def contrato_create(request):
     return render(request, 'core/contrato/form.html', {'form': form, 'titulo': 'Novo Contrato'})
 
 
+@login_required
 def contrato_detail(request, pk):
     obj = get_object_or_404(Contrato, pk=pk)
     return render(request, 'core/contrato/detail.html', {'obj': obj})
 
 
+@login_required
 def contrato_update(request, pk):
     obj = get_object_or_404(Contrato, pk=pk)
     form = ContratoForm(request.POST or None, instance=obj)
@@ -467,6 +497,7 @@ def contrato_update(request, pk):
     return render(request, 'core/contrato/form.html', {'form': form, 'titulo': 'Editar Contrato', 'obj': obj})
 
 
+@login_required
 def contrato_delete(request, pk):
     obj = get_object_or_404(Contrato, pk=pk)
     if request.method == 'POST':
@@ -480,6 +511,7 @@ def contrato_delete(request, pk):
 # Exportação PDF
 # ---------------------------------------------------------------------------
 
+@login_required
 def contrato_pdf(request, evento_pk):
     try:
         from weasyprint import HTML  # lazy import - evita erro de DLL no Windows
@@ -517,6 +549,7 @@ def contrato_pdf(request, evento_pk):
 # Grade de Planejamento (Slots)
 # ---------------------------------------------------------------------------
 
+@login_required
 def grade_view(request):
     """Grade de planejamento: exibe slots agrupados por data e polo."""
     from collections import defaultdict
@@ -569,6 +602,7 @@ def grade_view(request):
     })
 
 
+@login_required
 def slot_lote_view(request):
     """Cria múltiplos slots em lote para uma data/polo/horário."""
     import datetime
@@ -625,6 +659,7 @@ def slot_lote_view(request):
     return render(request, 'core/slot_lote.html', {'form': form})
 
 
+@login_required
 def slot_preencher_view(request, pk):
     """Preenche um slot vago com uma atração, criando o contrato."""
     slot = get_object_or_404(SlotProgramacao, pk=pk, contrato__isnull=True)
@@ -683,6 +718,7 @@ def slot_preencher_view(request, pk):
     return render(request, 'core/slot_preencher.html', {'slot': slot, 'form': form})
 
 
+@login_required
 def slot_excluir_view(request, pk):
     """Remove um slot da grade (POST). Se tiver contrato, só exclui o slot (não o contrato)."""
     slot = get_object_or_404(SlotProgramacao, pk=pk)
@@ -696,6 +732,7 @@ def slot_excluir_view(request, pk):
     return redirect('grade')
 
 
+@login_required
 def slot_desvincular_view(request, pk):
     """Remove a atração do slot e exclui o contrato associado. O slot fica vago."""
     slot = get_object_or_404(SlotProgramacao, pk=pk)
