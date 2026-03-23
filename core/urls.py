@@ -51,4 +51,11 @@ urlpatterns = [
     path('grade/<int:pk>/preencher/', views.slot_preencher_view, name='slot_preencher'),
     path('grade/<int:pk>/excluir/', views.slot_excluir_view, name='slot_excluir'),
     path('grade/<int:pk>/desvincular/', views.slot_desvincular_view, name='slot_desvincular'),
+
+    # Gestão de Usuários (apenas superusuários)
+    path('usuarios/', views.usuario_list, name='usuario_list'),
+    path('usuarios/novo/', views.usuario_create, name='usuario_create'),
+    path('usuarios/<int:pk>/editar/', views.usuario_edit, name='usuario_edit'),
+    path('usuarios/<int:pk>/senha/', views.usuario_senha, name='usuario_senha'),
+    path('usuarios/<int:pk>/excluir/', views.usuario_delete, name='usuario_delete'),
 ]

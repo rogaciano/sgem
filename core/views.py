@@ -744,3 +744,80 @@ def slot_desvincular_view(request, pk):
         contrato.delete()
         messages.success(request, f'Atração "{nome}" e contrato removidos. Slot vago.')
     return redirect('grade')
+
+
+# ---------------------------------------------------------------------------
+# Gestão de Usuários (apenas superusuários)
+# ---------------------------------------------------------------------------
+
+from django.contrib.auth.models import User
+from .forms_usuarios import UsuarioCreateForm, UsuarioEditForm, UsuarioSenhaForm
+
+
+def _superuser_required(view_func):
+    """Decorator: exige login + superuser."""
+    from functools import wraps
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.shortcuts import redirect as _redirect
+            return _redirect(f'/login/?next={request.path}')
+        if not request.user.is_superuser:
+            messages.error(request, 'Acesso restrito a superusuários.')
+            return redirect('dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@_superuser_required
+def usuario_list(request):
+    usuarios = User.objects.all().order_by('username')
+    return render(request, 'core/usuarios/list.html', {'usuarios': usuarios})
+
+
+@_superuser_required
+def usuario_create(request):
+    form = UsuarioCreateForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Usuário criado com sucesso!')
+        return redirect('usuario_list')
+    return render(request, 'core/usuarios/form.html', {'form': form, 'titulo': 'Novo Usuário'})
+
+
+@_superuser_required
+def usuario_edit(request, pk):
+    usuario = get_object_or_404(User, pk=pk)
+    form = UsuarioEditForm(request.POST or None, instance=usuario)
+    if form.is_valid():
+        form.save()
+        messages.success(request, f'Usuário "{usuario.username}" atualizado!')
+        return redirect('usuario_list')
+    return render(request, 'core/usuarios/form.html', {
+        'form': form, 'titulo': f'Editar: {usuario.username}', 'usuario': usuario,
+    })
+
+
+@_superuser_required
+def usuario_senha(request, pk):
+    usuario = get_object_or_404(User, pk=pk)
+    form = UsuarioSenhaForm(user=usuario, data=request.POST or None)
+    if form.is_valid():
+        form.save()
+        messages.success(request, f'Senha de "{usuario.username}" alterada!')
+        return redirect('usuario_list')
+    return render(request, 'core/usuarios/senha.html', {'form': form, 'usuario': usuario})
+
+
+@_superuser_required
+def usuario_delete(request, pk):
+    usuario = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        if usuario == request.user:
+            messages.error(request, 'Você não pode excluir sua própria conta.')
+        else:
+            nome = usuario.username
+            usuario.delete()
+            messages.success(request, f'Usuário "{nome}" excluído.')
+    return redirect('usuario_list')
+
