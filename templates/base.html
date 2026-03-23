@@ -104,10 +104,13 @@
                 </div>
                 <span class="truncate">{{ request.user.username }}</span>
             </div>
-            <a href="{% url 'logout' %}" class="sidebar-link text-xs text-red-400/70 hover:text-red-400 hover:bg-red-500/10">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                Sair
-            </a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="sidebar-link text-xs text-red-400/70 hover:text-red-400 hover:bg-red-500/10 w-full">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Sair
+                </button>
+            </form>
         </div>
     </aside>
 
