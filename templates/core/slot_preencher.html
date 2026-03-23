@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Preencher Slot — SGEM{% endblock %}
+{% block page_title %}Preencher Slot{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+.select2-container--default .select2-selection--single {
+    background: #1f2937; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem; height: 42px; display:flex; align-items:center; padding: 0 12px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered { color: #fff; line-height: normal; padding: 0; }
+.select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; right: 10px; }
+.select2-container--default .select2-selection--single .select2-selection__arrow b { border-color: #6b7280 transparent transparent; }
+.select2-dropdown { background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; overflow: hidden; }
+.select2-container--default .select2-results__option--highlighted { background: #ea580c; }
+.select2-results__option { color: #e5e7eb; padding: 8px 12px; font-size: 0.875rem; }
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+    color: #fff; padding: 6px 10px; font-size: 0.875rem;
+}
+.select2-search--dropdown { padding: 8px; }
+.select2-container { width: 100% !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-xl">
+    <a href="{% url 'grade' %}" class="text-sm text-gray-400 hover:text-white transition mb-5 inline-block">← Voltar à Grade</a>
+
+    <!-- Info do slot -->
+    <div class="bg-gray-900 border border-orange-500/25 rounded-2xl p-5 mb-5">
+        <p class="text-xs text-orange-400 font-semibold uppercase mb-3">Slot a Preencher</p>
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <p class="text-xs text-gray-500">Data</p>
+                <p class="font-bold text-white">{{ slot.data|date:"d/m/Y" }}</p>
+                <p class="text-xs text-gray-600">{{ slot.data|date:"l" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Horário</p>
+                <p class="font-bold text-orange-400">{{ slot.horario_inicio|time:"H:i" }} – {{ slot.horario_fim|time:"H:i" }}</p>
+                <p class="text-xs text-gray-600">{{ slot.duracao_minutos }} minutos</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Polo</p>
+                <p class="font-bold text-white">{{ slot.polo.nome }}</p>
+                <p class="text-xs text-gray-600">{{ slot.evento.nome }}</p>
+            </div>
+        </div>
+        {% if slot.observacao %}
+        <p class="mt-3 text-xs text-gray-500">📝 {{ slot.observacao }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Formulário -->
+    <div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <h2 class="text-base font-bold text-white mb-5">Escolher Atração</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1.5">Atração</label>
+                <select name="atracao" id="id_atracao" required
+                        class="w-full">
+                    <option value="">— Buscar atração... —</option>
+                    {% for a in form.atracao.field.queryset %}
+                    <option value="{{ a.pk }}">{{ a.nome }} ({{ a.get_tipo_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1.5">Valor do Cachê (R$)</label>
+                <input type="number" name="valor_cache" value="0" step="0.01" min="0"
+                       class="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1.5">Observações</label>
+                <textarea name="observacoes" rows="2" placeholder="Observações opcionais..."
+                          class="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 resize-none"></textarea>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                        class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition">
+                    ✅ Confirmar Atração
+                </button>
+                <a href="{% url 'grade' %}"
+                   class="px-5 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_atracao').select2({
+        placeholder: 'Buscar atração...',
+        allowClear: true,
+        language: {
+            noResults: () => 'Nenhuma atração encontrada',
+            searching: () => 'Buscando...',
+        },
+        dropdownParent: $('body'),
+    });
+});
+</script>
+{% endblock %}

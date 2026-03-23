@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} — SGEM{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block extra_head %}
+{# Select2 CDN #}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<style>
+/* Select2 dark theme */
+.select2-container--default .select2-selection--single {
+    background-color: #1f2937;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    height: 42px;
+    display: flex;
+    align-items: center;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #f9fafb;
+    line-height: 42px;
+    padding-left: 14px;
+    padding-right: 30px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+    right: 8px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #6b7280 transparent transparent transparent;
+}
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #6b7280 transparent;
+}
+.select2-dropdown {
+    background-color: #111827;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: #1f2937;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.5rem;
+    color: #f9fafb;
+    padding: 6px 10px;
+    margin: 8px;
+    width: calc(100% - 16px);
+    outline: none;
+}
+.select2-container--default .select2-results__option {
+    color: #d1d5db;
+    padding: 8px 14px;
+    font-size: 0.875rem;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #ea580c;
+    color: white;
+}
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: rgba(234,88,12,0.2);
+    color: #fb923c;
+}
+.select2-container {
+    width: 100% !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <div class="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
+            <div class="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {% if obj %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    {% else %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>{% endif %}
+                </svg>
+            </div>
+            <div>
+                <h2 class="font-semibold text-white">{{ titulo }}</h2>
+                {% if obj %}<p class="text-xs text-gray-500">Editando: {{ obj }}</p>{% endif %}
+            </div>
+        </div>
+
+        <form method="post" id="contrato-form" novalidate>
+            {% csrf_token %}
+            <div class="space-y-5">
+                {% for field in form %}
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-400 ml-0.5">*</span>{% endif %}
+                        </label>
+                        {# Botão "+ Cadastrar" somente no campo atracao #}
+                        {% if field.html_name == 'atracao' %}
+                        <button type="button" id="btn-nova-atracao"
+                            class="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition font-medium">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Nova Atração
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {# Select com classe para Select2 #}
+                    {% if field.field.widget.input_type == 'select' %}
+                    <div>
+                        <select name="{{ field.html_name }}"
+                                id="{{ field.id_for_label }}"
+                                class="select2-field w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm"
+                                {% if field.field.required %}required{% endif %}>
+                            {% if not field.field.required %}<option value="">---------</option>{% endif %}
+                            {% for val, label in field.field.choices %}
+                                {% if val %}
+                                <option value="{{ val }}"
+                                    {% if field.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="[&>input]:w-full [&>input]:rounded-xl [&>input]:border [&>input]:border-white/10 [&>input]:bg-gray-800 [&>input]:text-white [&>input]:text-sm [&>input]:px-3.5 [&>input]:py-2.5 [&>input]:outline-none [&>input]:focus:border-orange-500/60 [&>input]:transition
+                               [&>textarea]:w-full [&>textarea]:rounded-xl [&>textarea]:border [&>textarea]:border-white/10 [&>textarea]:bg-gray-800 [&>textarea]:text-white [&>textarea]:text-sm [&>textarea]:px-3.5 [&>textarea]:py-2.5 [&>textarea]:outline-none [&>textarea]:focus:border-orange-500/60 [&>textarea]:transition [&>textarea]:resize-none">
+                        {{ field }}
+                    </div>
+                    {% endif %}
+
+                    {% if field.errors %}
+                    {% for error in field.errors %}
+                    <p class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ error }}
+                    </p>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                <div class="rounded-xl bg-red-500/10 border border-red-500/30 p-4">
+                    {% for error in form.non_field_errors %}
+                    <p class="text-sm text-red-400">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center gap-3 mt-8 pt-6 border-t border-white/10">
+                <button type="submit"
+                    class="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium text-sm transition-all hover:shadow-lg hover:shadow-orange-500/25">
+                    {% if obj %}Salvar Alterações{% else %}Criar Contrato{% endif %}
+                </button>
+                <a href="javascript:history.back()"
+                    class="px-6 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white font-medium text-sm transition">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Modal Cadastro Rápido de Atração ── #}
+<div id="modal-nova-atracao" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-white">Nova Atração</h3>
+            </div>
+            <button id="btn-fechar-modal" class="text-gray-500 hover:text-gray-300 transition text-xl leading-none">&times;</button>
+        </div>
+
+        <div id="modal-erros" class="hidden mb-4 rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400"></div>
+
+        <form id="form-nova-atracao" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Nome <span class="text-red-400">*</span></label>
+                <input type="text" name="nome" id="nova-nome" required placeholder="Ex: Banda Forró do Nordeste"
+                    class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/20 transition">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Tipo <span class="text-red-400">*</span></label>
+                    <select name="tipo" id="nova-tipo" required
+                        class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                        <option value="banda">Banda</option>
+                        <option value="cantor">Cantor Solo</option>
+                        <option value="folclorico">Grupo Folclórico</option>
+                        <option value="orquestra">Orquestra</option>
+                        <option value="danca">Grupo de Dança</option>
+                        <option value="teatro">Teatro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">UF <span class="text-red-400">*</span></label>
+                    <input type="text" name="uf_origem" id="nova-uf" required maxlength="2" placeholder="PE"
+                        style="text-transform:uppercase"
+                        class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Cidade de Origem <span class="text-red-400">*</span></label>
+                <input type="text" name="cidade_origem" id="nova-cidade" required placeholder="Ex: Caruaru"
+                    class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" id="btn-salvar-atracao"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition flex items-center justify-center gap-2">
+                    <span id="btn-salvar-texto">Salvar e Selecionar</span>
+                    <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </button>
+                <button type="button" id="btn-cancelar-modal"
+                    class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function () {
+    // ── Inicializa Select2 em todos os selects ──
+    $('.select2-field').select2({
+        theme: 'default',
+        language: 'pt-BR',
+        placeholder: 'Selecione...',
+        allowClear: false,
+        width: '100%',
+    });
+
+    // ── Modal de Nova Atração ──
+    const modal    = document.getElementById('modal-nova-atracao');
+    const formModal = document.getElementById('form-nova-atracao');
+    const errosDiv = document.getElementById('modal-erros');
+    const spinner  = document.getElementById('btn-spinner');
+    const btnTexto = document.getElementById('btn-salvar-texto');
+
+    function abrirModal() {
+        modal.classList.remove('hidden');
+        document.getElementById('nova-nome').focus();
+    }
+    function fecharModal() {
+        modal.classList.add('hidden');
+        formModal.reset();
+        errosDiv.classList.add('hidden');
+        errosDiv.textContent = '';
+    }
+
+    document.getElementById('btn-nova-atracao').addEventListener('click', abrirModal);
+    document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
+    document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) fecharModal();
+    });
+
+    // ── Submit AJAX do modal ──
+    formModal.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        spinner.classList.remove('hidden');
+        btnTexto.textContent = 'Salvando...';
+        errosDiv.classList.add('hidden');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const formData = new FormData(formModal);
+
+        try {
+            const resp = await fetch('{% url "atracao_create_ajax" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken },
+                body: formData,
+            });
+            const data = await resp.json();
+
+            if (resp.ok) {
+                // Adiciona a nova opção ao Select2 e seleciona
+                const select = $('#id_atracao');
+                const newOption = new Option(data.text, data.id, true, true);
+                select.append(newOption).trigger('change');
+                fecharModal();
+            } else {
+                // Exibe erros de validação
+                const msgs = Object.entries(data.errors || {})
+                    .map(([f, errs]) => errs.join(', ')).join('\n');
+                errosDiv.textContent = msgs || 'Erro ao salvar.';
+                errosDiv.classList.remove('hidden');
+            }
+        } catch (err) {
+            errosDiv.textContent = 'Erro de conexão. Tente novamente.';
+            errosDiv.classList.remove('hidden');
+        } finally {
+            spinner.classList.add('hidden');
+            btnTexto.textContent = 'Salvar e Selecionar';
+        }
+    });
+});
+</script>
+{% endblock %}

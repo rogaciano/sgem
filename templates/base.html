@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SGEM — Caruaru{% endblock %}</title>
+    <meta name="description" content="Sistema de Gestão de Eventos Musicais da Prefeitura de Caruaru">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa',
+                            300: '#fdba74', 400: '#fb923c', 500: '#f97316',
+                            600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-150 text-sm font-medium; }
+        .sidebar-link.active { @apply bg-orange-500/20 text-orange-400 border border-orange-500/30; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full text-white" x-data>
+
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 flex-shrink-0 bg-gray-900 border-r border-white/10 flex flex-col">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">C</div>
+            <div>
+                <p class="text-sm font-bold text-white leading-none">SGEM</p>
+                <p class="text-xs text-gray-500 mt-0.5">Caruaru · PE</p>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest px-4 mb-2">Principal</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="{% url 'calendario' %}" class="sidebar-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Calendário
+            </a>
+            <a href="{% url 'programacao' %}" class="sidebar-link {% if request.resolver_match.url_name == 'programacao' %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Programação
+            </a>
+            <a href="{% url 'grade' %}" class="sidebar-link {% if request.resolver_match.url_name == 'grade' or 'slot' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Grade
+            </a>
+
+            <a href="{% url 'evento_list' %}" class="sidebar-link {% if 'evento' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="{% url 'contrato_list' %}" class="sidebar-link {% if 'contrato' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Contratos
+            </a>
+            <a href="{% url 'polo_list' %}" class="sidebar-link {% if 'polo' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Polos
+            </a>
+            <a href="{% url 'atracao_list' %}" class="sidebar-link {% if 'atracao' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                Atrações
+            </a>
+            <a href="{% url 'pessoa_list' %}" class="sidebar-link {% if 'pessoa' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Equipe
+            </a>
+        </nav>
+
+        <!-- Footer sidebar -->
+        <div class="px-4 py-4 border-t border-white/10">
+            <a href="/admin/" class="sidebar-link text-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Admin Django
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Topbar -->
+        <header class="h-14 flex items-center justify-between px-6 bg-gray-900/50 border-b border-white/10 backdrop-blur">
+            <div class="flex items-center gap-3">
+                <h1 class="text-sm font-semibold text-white">{% block page_title %}SGEM{% endblock %}</h1>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+                <span>Prefeitura de Caruaru</span>
+                <span class="text-gray-700">·</span>
+                <span class="text-orange-400 font-medium">Sistema de Gestão de Eventos</span>
+            </div>
+        </header>
+
+        <!-- Django Messages -->
+        {% if messages %}
+        <div class="px-6 pt-4 space-y-2" id="messages-container">
+            {% for message in messages %}
+            <div x-data="{ show: true }" x-show="show" x-transition
+                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+                 {% if message.tags == 'success' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                 {% elif message.tags == 'error' %}bg-red-500/20 text-red-400 border border-red-500/30
+                 {% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
+                <span class="flex-1">{{ message }}</span>
+                <button @click="show = false" class="opacity-60 hover:opacity-100">✕</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-950">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

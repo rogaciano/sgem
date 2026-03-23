@@ -1,0 +1,9 @@
+Django>=6.0.3
+django-crispy-forms>=2.6
+crispy-tailwind>=1.0.3
+django-filter>=25.2
+Pillow>=12.1.1
+weasyprint>=68.1
+gunicorn
+mysqlclient
+python-dotenv

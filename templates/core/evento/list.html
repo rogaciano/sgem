@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Eventos — SGEM{% endblock %}
+{% block page_title %}Eventos{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h2 class="text-xl font-bold text-white">Eventos Culturais</h2>
+        <p class="text-sm text-gray-500 mt-0.5">{{ filter.qs.count }} evento(s) encontrado(s)</p>
+    </div>
+    <a href="{% url 'evento_create' %}"
+       class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition hover:shadow-lg hover:shadow-orange-500/25">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Novo Evento
+    </a>
+</div>
+
+<!-- Cards KPI -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-900 border border-white/10 rounded-xl p-4">
+        <p class="text-xl font-bold text-white">{{ filter.qs.count }}</p>
+        <p class="text-xs text-gray-500 mt-0.5">Total de Eventos</p>
+    </div>
+    <div class="bg-gray-900 border border-white/10 rounded-xl p-4">
+        <p class="text-xl font-bold text-emerald-400">R$ {{ total_cache|floatformat:0 }}</p>
+        <p class="text-xs text-gray-500 mt-0.5">Total em Cachês</p>
+    </div>
+</div>
+
+<!-- Filtros -->
+{% include 'partials/_filter_panel.html' with filter=filter %}
+
+<!-- Tabela -->
+<div class="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-white/10 text-left">
+                <th class="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Evento</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Período</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Contratos</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+            {% for evento in filter.qs %}
+            <tr class="hover:bg-white/5 transition-colors group">
+                <td class="px-4 py-3">
+                    <p class="font-medium text-white">{{ evento.nome }}</p>
+                    <p class="text-xs text-gray-500">{{ evento.duracao_dias }} dias</p>
+                </td>
+                <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400">
+                        {{ evento.get_tipo_display }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-gray-300">
+                    {{ evento.data_inicio|date:"d/m/Y" }} → {{ evento.data_fim|date:"d/m/Y" }}
+                </td>
+                <td class="px-4 py-3">
+                    <span class="text-white font-semibold">{{ evento.total_contratos }}</span>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{% url 'evento_detail' evento.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition text-xs font-medium">
+                            👁️ Ver
+                        </a>
+                        <a href="{% url 'evento_update' evento.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20 transition text-xs font-medium">
+                            ✏️ Editar
+                        </a>
+                        <a href="{% url 'evento_pdf' evento.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition text-xs font-medium">
+                            📄 PDF
+                        </a>
+                        {% include 'partials/_modal_delete.html' with obj=evento delete_url='evento_delete' %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-4 py-12 text-center text-gray-500">Nenhum evento encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

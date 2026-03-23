@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ obj.nome }} — Equipe{% endblock %}
+{% block page_title %}Pessoa: {{ obj.nome }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <a href="{% url 'pessoa_list' %}" class="text-sm text-gray-400 hover:text-white transition">← Voltar</a>
+    <a href="{% url 'pessoa_update' obj.pk %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium transition">✏️ Editar</a>
+</div>
+
+<div class="max-w-lg">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+                <span class="text-2xl font-bold text-indigo-400">{{ obj.nome|first }}</span>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white">{{ obj.nome }}</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-400">{{ obj.get_funcao_display }}</span>
+            </div>
+        </div>
+        <div class="space-y-3">
+            <div><p class="text-xs text-gray-500">Contato</p><p class="text-white font-medium mt-1">{{ obj.contato }}</p></div>
+            <div><p class="text-xs text-gray-500">Polos como Responsável</p>
+                {% for polo in obj.polos.all %}
+                <a href="{% url 'polo_detail' polo.pk %}" class="text-orange-400 hover:text-orange-300 text-sm block mt-1">{{ polo.nome }}</a>
+                {% empty %}<p class="text-gray-500 text-sm mt-1">Nenhum polo vinculado.</p>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

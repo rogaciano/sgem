@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Calendário — SGEM{% endblock %}
+{% block page_title %}Calendário de Apresentações{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<style>
+#cal-container { position: relative; }
+.fc .fc-toolbar-title { font-size: 1rem; font-weight: 700; color: #fff; }
+.fc .fc-button { background: #374151; border-color: rgba(255,255,255,0.1); color: #d1d5db; font-size: 0.75rem; padding: 5px 12px; border-radius: 8px; transition: all 0.15s; }
+.fc .fc-button:hover { background: #4b5563; border-color: rgba(255,255,255,0.2); }
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active { background: #ea580c; border-color: #ea580c; color: #fff; }
+.fc .fc-col-header-cell-cushion { color: #6b7280; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 10px 0; }
+.fc .fc-daygrid-day-number { color: #6b7280; font-size: 0.8rem; padding: 6px 10px; }
+.fc .fc-daygrid-day.fc-day-today { background: rgba(234,88,12,0.07); }
+.fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,0.07); }
+.fc-daygrid-event { border-radius: 5px; font-size: 0.7rem; padding: 2px 6px; border: none !important; cursor: pointer; white-space: nowrap; overflow: hidden; }
+.fc-daygrid-event:hover { filter: brightness(1.15); }
+.fc .fc-more-link { color: #fb923c; font-size: 0.7rem; font-weight: 600; }
+/* TimeGrid */
+.fc .fc-timegrid-slot { height: 28px; }
+.fc .fc-timegrid-slot-label { color: #6b7280; font-size: 0.7rem; }
+.fc-timegrid-event { border-radius: 6px; border: none !important; padding: 2px 5px; font-size: 0.7rem; }
+/* List */
+.fc .fc-list-event:hover td { background: rgba(255,255,255,0.04); }
+.fc .fc-list-day-cushion { background: #1f2937; }
+.fc .fc-list-event-title a { color: #e5e7eb; }
+.fc .fc-list-event-time { color: #fb923c; font-size: 0.75rem; }
+/* Tooltip */
+#tip {
+    position: fixed; z-index: 9999; pointer-events: none;
+    background: #111827; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px; padding: 14px 18px; width: 260px;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.6); display: none;
+    font-size: 0.8rem; color: #d1d5db;
+}
+#tip .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; }
+#tip .row { display: flex; align-items: center; margin-top: 4px; }
+#tip .label { color: #6b7280; min-width: 52px; }
+#tip .val { color: #f9fafb; font-weight: 600; }
+#tip .cache { color: #34d399; font-weight: 700; }
+/* Chips de filtro polo */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all .15s; user-select: none; }
+.chip.active { border-color: transparent; }
+.chip:not(.active) { background: transparent !important; opacity: 0.55; }
+.chip:hover { opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-5">
+    <div>
+        <p class="text-xs text-gray-500 mt-0.5">Clique em uma apresentação para ver detalhes</p>
+    </div>
+    <!-- Filtros por polo (chips) -->
+    <div class="flex flex-wrap gap-2" id="polo-chips">
+        <span class="chip active" data-polo="todos" style="background:#374151; color:#e5e7eb;">
+            🗂️ Todos os Polos
+        </span>
+        {% for polo in polos %}
+        <span class="chip active" data-polo="{{ polo.id }}"
+              style="background:{{ polo.cor }}26; color:{{ polo.cor }}; border-color:{{ polo.cor }}40;">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ polo.cor }};flex-shrink:0;"></span>
+            {{ polo.nome }}
+        </span>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+    <div id="calendario"></div>
+</div>
+
+<!-- Tooltip -->
+<div id="tip">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span class="dot" id="tip-dot"></span>
+        <span style="font-weight:700;color:#fff;font-size:.875rem;" id="tip-nome"></span>
+    </div>
+    <div class="row"><span class="label">Polo</span><span class="val" id="tip-polo"></span></div>
+    <div class="row"><span class="label">Evento</span><span class="val" id="tip-evento"></span></div>
+    <div class="row"><span class="label">Horário</span><span class="val" id="tip-hora"></span></div>
+    <div class="row"><span class="label">Tipo</span><span class="val" id="tip-tipo"></span></div>
+    <div class="row"><span class="label">Cachê</span><span class="cache" id="tip-cache"></span></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);text-align:center;">
+        <a id="tip-link" href="#" style="color:#fb923c;font-size:.75rem;font-weight:600;">Ver contrato →</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+const POLO_CORES = {{ polo_cores_json|safe }};
+const POLO_TODOS = 'todos';
+let activePolos = new Set(['todos', ...Object.keys(POLO_CORES)]);
+let calendar;
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tip = document.getElementById('tip');
+
+    // ── Chips de filtro ──
+    document.getElementById('polo-chips').addEventListener('click', function(e) {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        const polo = chip.dataset.polo;
+
+        if (polo === 'todos') {
+            if (activePolos.has('todos')) {
+                // Desativa tudo
+                activePolos.clear();
+            } else {
+                // Ativa tudo
+                activePolos = new Set(['todos', ...Object.keys(POLO_CORES)]);
+            }
+        } else {
+            activePolos.delete('todos');
+            if (activePolos.has(polo)) activePolos.delete(polo);
+            else activePolos.add(polo);
+            if (activePolos.size === Object.keys(POLO_CORES).length)
+                activePolos.add('todos');
+        }
+
+        // Atualiza visual dos chips
+        document.querySelectorAll('.chip').forEach(c => {
+            c.classList.toggle('active', activePolos.has(c.dataset.polo));
+        });
+        calendar.refetchEvents();
+    });
+
+    // ── FullCalendar ──
+    calendar = new FullCalendar.Calendar(document.getElementById('calendario'), {
+        locale: 'pt-br',
+        initialDate: '{{ initial_date }}',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left:   'prev,next today',
+            center: 'title',
+            right:  'dayGridMonth,timeGridWeek,listWeek'
+        },
+        buttonText: { today:'Hoje', month:'Mês', week:'Semana', list:'Lista' },
+        height: 'auto',
+        dayMaxEvents: 5,
+        events: function(fetchInfo, successCb, failureCb) {
+            fetch('{% url "calendario_json" %}')
+                .then(r => r.json())
+                .then(data => {
+                    const filtered = data.filter(ev => {
+                        const pid = String(ev.extendedProps.polo_id);
+                        return activePolos.has('todos') || activePolos.has(pid);
+                    });
+                    successCb(filtered);
+                })
+                .catch(failureCb);
+        },
+        eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            const p = info.event.extendedProps;
+            document.getElementById('tip-dot').style.background = info.event.backgroundColor;
+            document.getElementById('tip-nome').textContent    = p.atracao;
+            document.getElementById('tip-polo').textContent    = p.polo;
+            document.getElementById('tip-evento').textContent  = p.evento;
+            document.getElementById('tip-hora').textContent    = `${p.inicio} – ${p.fim}`;
+            document.getElementById('tip-tipo').textContent    = p.tipo;
+            document.getElementById('tip-cache').textContent   = p.cache > 0
+                ? 'R$ ' + Number(p.cache).toLocaleString('pt-BR', {minimumFractionDigits:2})
+                : 'A definir';
+            document.getElementById('tip-link').href           = p.url_detalhe;
+
+            const x = info.jsEvent.clientX, y = info.jsEvent.clientY;
+            tip.style.left    = (x + 16) + 'px';
+            tip.style.top     = (y - 30) + 'px';
+            tip.style.display = 'block';
+        },
+        eventMouseLeave: () => { tip.style.display = 'none'; },
+    });
+    calendar.render();
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#calendario') && !e.target.closest('#tip'))
+            tip.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

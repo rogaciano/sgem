@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Contrato #{{ obj.pk }} — SGEM{% endblock %}
+{% block page_title %}Contrato #{{ obj.pk }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <a href="{% url 'contrato_list' %}" class="text-sm text-gray-400 hover:text-white transition">← Voltar</a>
+    <a href="{% url 'contrato_update' obj.pk %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium transition">✏️ Editar</a>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl p-6 space-y-4">
+        <h2 class="text-lg font-bold text-white border-b border-white/10 pb-4">Detalhes do Contrato</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div><p class="text-xs text-gray-500 mb-1">Evento</p><p class="font-semibold text-white">{{ obj.evento }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Polo</p><p class="font-semibold text-white">{{ obj.polo }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Atração</p><p class="font-semibold text-white">{{ obj.atracao }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Data</p><p class="font-semibold text-white">{{ obj.data|date:"d/m/Y" }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Horário Início</p><p class="font-bold text-orange-400 text-xl">{{ obj.horario_inicio|time:"H:i" }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Horário Fim</p><p class="font-bold text-orange-300 text-xl">{{ obj.horario_fim|time:"H:i" }}</p></div>
+            <div><p class="text-xs text-gray-500 mb-1">Valor do Cachê</p><p class="font-bold text-emerald-400 text-xl">R$ {{ obj.valor_cache|floatformat:2 }}</p></div>
+        </div>
+        {% if obj.observacoes %}
+        <div class="pt-4 border-t border-white/10">
+            <p class="text-xs text-gray-500 mb-1">Observações</p>
+            <p class="text-gray-300 text-sm">{{ obj.observacoes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

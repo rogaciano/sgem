@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}{{ obj.nome }} — Evento{% endblock %}
+{% block page_title %}Evento: {{ obj.nome }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <a href="{% url 'evento_list' %}" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
+        ← Voltar para Eventos
+    </a>
+    <div class="flex items-center gap-2">
+        <a href="{% url 'evento_pdf' obj.pk %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition">
+            📄 Exportar PDF
+        </a>
+        <a href="{% url 'evento_update' obj.pk %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium transition">
+            ✏️ Editar
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Dados básicos -->
+    <div class="lg:col-span-2 bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-white">{{ obj.nome }}</h2>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 mt-2 inline-block">
+                    {{ obj.get_tipo_display }}
+                </span>
+            </div>
+        </div>
+        {% if obj.descricao %}
+        <p class="text-gray-300 text-sm leading-relaxed">{{ obj.descricao }}</p>
+        {% endif %}
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/10">
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Início</p>
+                <p class="font-semibold text-white">{{ obj.data_inicio|date:"d/m/Y" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Término</p>
+                <p class="font-semibold text-white">{{ obj.data_fim|date:"d/m/Y" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Duração</p>
+                <p class="font-semibold text-white">{{ obj.duracao_dias }} dias</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Total em Cachês</p>
+                <p class="font-semibold text-emerald-400">R$ {{ obj.total_cache|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs laterais -->
+    <div class="space-y-4">
+        <div class="bg-gray-900 border border-white/10 rounded-2xl p-5">
+            <p class="text-xs text-gray-500 mb-1">Contratos</p>
+            <p class="text-3xl font-bold text-white">{{ obj.total_contratos }}</p>
+        </div>
+        <div class="bg-gray-900 border border-white/10 rounded-2xl p-5">
+            <p class="text-xs text-gray-500 mb-1">Cachê Total</p>
+            <p class="text-2xl font-bold text-emerald-400">R$ {{ obj.total_cache|floatformat:0 }}</p>
+        </div>
+        <a href="{% url 'contrato_create' %}"
+           class="flex items-center justify-center gap-2 w-full p-4 rounded-2xl border border-dashed border-orange-500/40 text-orange-400 hover:border-orange-500/70 hover:bg-orange-500/5 transition text-sm font-medium">
+            + Adicionar Contrato
+        </a>
+    </div>
+</div>
+
+<!-- Cronograma por data -->
+{% if contratos_por_data %}
+<div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+    <h3 class="font-semibold text-white mb-6">Cronograma</h3>
+    {% for data, contratos in contratos_por_data.items %}
+    <div class="mb-6">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
+                <span class="text-xs font-bold text-orange-400">{{ data|date:"d" }}</span>
+            </div>
+            <p class="text-sm font-semibold text-white">{{ data|date:"l, d/m/Y" }}</p>
+        </div>
+        <div class="ml-11 space-y-2">
+            {% for c in contratos %}
+            <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-800/60 hover:bg-gray-800 transition">
+                <span class="text-orange-400 font-bold text-sm w-12">{{ c.horario_inicio|time:"H:i" }}</span>
+                <span class="font-medium text-white flex-1">{{ c.atracao.nome }}</span>
+                <span class="text-gray-400 text-sm">{{ c.polo.nome }}</span>
+                <span class="text-emerald-400 text-sm font-semibold">R$ {{ c.valor_cache|floatformat:0 }}</span>
+                <a href="{% url 'contrato_detail' c.pk %}" class="text-gray-600 hover:text-gray-400 text-xs transition">Ver →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-gray-900 border border-white/10 rounded-2xl p-12 text-center">
+    <p class="text-gray-500 text-sm">Nenhum contrato cadastrado para este evento.</p>
+    <a href="{% url 'contrato_create' %}" class="mt-3 inline-block text-sm text-orange-400 hover:text-orange-300">
+        Adicionar Contrato →
+    </a>
+</div>
+{% endif %}
+{% endblock %}

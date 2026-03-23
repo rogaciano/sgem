@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}{{ obj.nome }} — Atração{% endblock %}
+{% block page_title %}Atração: {{ obj.nome }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <a href="{% url 'atracao_list' %}" class="text-sm text-gray-400 hover:text-white transition">← Voltar</a>
+    <a href="{% url 'atracao_update' obj.pk %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium transition">✏️ Editar</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <h2 class="text-xl font-bold text-white mb-1">{{ obj.nome }}</h2>
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">{{ obj.get_tipo_display }}</span>
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/10">
+            <div><p class="text-xs text-gray-500">Cidade de Origem</p><p class="text-white font-medium mt-1">{{ obj.cidade_origem }}</p></div>
+            <div><p class="text-xs text-gray-500">Estado</p><p class="text-white font-medium mt-1">{{ obj.uf_origem }}</p></div>
+        </div>
+    </div>
+    <div class="space-y-4">
+        <div class="bg-gray-900 border border-white/10 rounded-2xl p-5">
+            <p class="text-xs text-gray-500">Contratos</p>
+            <p class="text-3xl font-bold text-white mt-1">{{ contratos.count }}</p>
+        </div>
+        <div class="bg-gray-900 border border-white/10 rounded-2xl p-5">
+            <p class="text-xs text-gray-500">Total Recebido</p>
+            <p class="text-xl font-bold text-emerald-400 mt-1">R$ {{ obj.total_cache|floatformat:0 }}</p>
+        </div>
+    </div>
+</div>
+
+{% if contratos %}
+<div class="bg-gray-900 border border-white/10 rounded-2xl p-6">
+    <h3 class="font-semibold text-white mb-4">Histórico de Apresentações</h3>
+    <div class="space-y-2">
+        {% for c in contratos %}
+        <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-800/60 hover:bg-gray-800 transition">
+            <span class="text-gray-400 text-xs w-20">{{ c.data|date:"d/m/Y" }}</span>
+            <span class="text-orange-400 font-bold text-sm w-12">{{ c.horario_inicio|time:"H:i" }}</span>
+            <span class="font-medium text-white flex-1">{{ c.polo.nome }}</span>
+            <span class="text-gray-400 text-xs">{{ c.evento.nome }}</span>
+            <span class="text-emerald-400 font-semibold text-sm">R$ {{ c.valor_cache|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cronograma — {{ evento.nome }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: #1a1a2e;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            color: white;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .evento-nome { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .evento-meta { font-size: 12px; opacity: 0.85; }
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .header-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .stat { text-align: center; }
+        .stat-value { font-size: 20px; font-weight: 700; }
+        .stat-label { font-size: 10px; opacity: 0.75; margin-top: 2px; }
+
+        /* Content */
+        .content { padding: 0 32px; }
+
+        .data-section { margin-bottom: 24px; }
+        .data-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .data-badge {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #c2410c;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .data-line { flex: 1; height: 1px; background: #e5e7eb; }
+
+        .polo-section { margin-bottom: 12px; }
+        .polo-nome {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            padding-left: 8px;
+            border-left: 3px solid #e5e7eb;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f9fafb; }
+        th {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tbody tr { border-bottom: 1px solid #f3f4f6; }
+        tbody tr:last-child { border-bottom: none; }
+        td { padding: 8px 10px; vertical-align: middle; }
+
+        .horario {
+            font-weight: 700;
+            color: #ea580c;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .atracao-nome { font-weight: 600; color: #111827; }
+        .atracao-tipo {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 1px;
+        }
+        .cache { font-weight: 700; color: #059669; text-align: right; }
+
+        /* Footer */
+        .footer {
+            margin-top: 32px;
+            padding: 20px 32px;
+            border-top: 2px solid #f3f4f6;
+        }
+        .footer-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+        }
+        .footer-total-label { font-size: 12px; font-weight: 600; color: #6b7280; }
+        .footer-total-value { font-size: 20px; font-weight: 700; color: #059669; }
+
+        .assinaturas {
+            display: flex;
+            gap: 40px;
+            margin-top: 24px;
+        }
+        .assinatura { flex: 1; text-align: center; }
+        .assinatura-linha {
+            border-top: 1px solid #374151;
+            margin-bottom: 6px;
+            margin-top: 40px;
+        }
+        .assinatura-nome { font-size: 11px; font-weight: 600; color: #111827; }
+        .assinatura-cargo { font-size: 10px; color: #9ca3af; }
+
+        .generated {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 9px;
+            color: #d1d5db;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-top">
+        <div>
+            <p style="font-size:10px; opacity:0.75; margin-bottom:4px;">PREFEITURA MUNICIPAL DE CARUARU · SECRETARIA CULTURAL</p>
+            <div class="evento-nome">{{ evento.nome }}</div>
+            <div class="evento-meta">{{ evento.data_inicio|date:"d/m/Y" }} a {{ evento.data_fim|date:"d/m/Y" }} · {{ evento.duracao_dias }} dias</div>
+        </div>
+        <span class="badge">{{ evento.get_tipo_display|upper }}</span>
+    </div>
+    <div class="header-stats">
+        <div class="stat">
+            <div class="stat-value">{{ cronograma|length }}</div>
+            <div class="stat-label">Dias com Agenda</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{% for data, polos in cronograma.items %}{% for polo, cs in polos.items %}{{ cs|length }}{% endfor %}{% endfor %}</div>
+            <div class="stat-label">Apresentações</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">R$ {{ total_cache|floatformat:0 }}</div>
+            <div class="stat-label">Total em Cachês</div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    {% for data, polos in cronograma.items %}
+    <div class="data-section">
+        <div class="data-header">
+            <span class="data-badge">{{ data|date:"l, d \d\e F \d\e Y" }}</span>
+            <div class="data-line"></div>
+        </div>
+
+        {% for polo, contratos in polos.items %}
+        <div class="polo-section">
+            <p class="polo-nome">{{ polo.nome }} · {{ polo.get_zona_display }}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:60px">Horário</th>
+                        <th>Atração</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
+                        <th style="text-align:right">Cachê (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in contratos %}
+                    <tr>
+                        <td class="horario">{{ c.horario_inicio|time:"H:i" }}</td>
+                        <td>
+                            <div class="atracao-nome">{{ c.atracao.nome }}</div>
+                            {% if c.observacoes %}<div class="atracao-tipo">{{ c.observacoes|truncatechars:50 }}</div>{% endif %}
+                        </td>
+                        <td><span>{{ c.atracao.get_tipo_display }}</span></td>
+                        <td>{{ c.atracao.cidade_origem }}/{{ c.atracao.uf_origem }}</td>
+                        <td class="cache">{{ c.valor_cache|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <div class="footer-total">
+        <span class="footer-total-label">TOTAL GERAL EM CACHÊS — {{ evento.nome|upper }}</span>
+        <span class="footer-total-value">R$ {{ total_cache|floatformat:2 }}</span>
+    </div>
+
+    <div class="assinaturas">
+        <div class="assinatura">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-nome">SECRETÁRIO(A) DE CULTURA</div>
+            <div class="assinatura-cargo">Prefeitura Municipal de Caruaru</div>
+        </div>
+        <div class="assinatura">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-nome">COORDENADOR(A) DO EVENTO</div>
+            <div class="assinatura-cargo">{{ evento.nome }}</div>
+        </div>
+        <div class="assinatura">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-nome">CONTROLE FINANCEIRO</div>
+            <div class="assinatura-cargo">Setor de Finanças</div>
+        </div>
+    </div>
+
+    <p class="generated">Documento gerado pelo SGEM — Sistema de Gestão de Eventos Musicais · Prefeitura de Caruaru/PE</p>
+</div>
+
+</body>
+</html>
