@@ -50,12 +50,26 @@ class PoloForm(BaseForm):
 
 
 class AtracaoForm(BaseForm):
+    UF_CHOICES = [('', '— UF —')] + [(uf, uf) for uf in [
+        'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA',
+        'MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN',
+        'RS','RO','RR','SC','SP','SE','TO',
+    ]]
+
     class Meta:
         model = Atracao
         fields = '__all__'
         widgets = {
-            'uf_origem': forms.TextInput(attrs={'maxlength': 2, 'style': 'text-transform:uppercase'}),
+            'uf_origem': forms.Select(choices=[]),  # choices set in __init__
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['uf_origem'].widget = forms.Select(choices=self.UF_CHOICES)
+        self.fields['uf_origem'].widget.attrs.update({
+            'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm '
+                     'focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3'
+        })
 
 
 class ContratoForm(BaseForm):
@@ -63,7 +77,7 @@ class ContratoForm(BaseForm):
         model = Contrato
         fields = '__all__'
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date'}),
+            'data': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'horario_inicio': forms.TimeInput(attrs={'type': 'time'}),
             'horario_fim': forms.TimeInput(attrs={'type': 'time'}),
             'observacoes': forms.Textarea(attrs={'rows': 3}),

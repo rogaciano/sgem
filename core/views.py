@@ -546,6 +546,40 @@ def contrato_pdf(request, evento_pk):
 
 
 # ---------------------------------------------------------------------------
+# API: Slots Vagos (para formulário de contrato)
+# ---------------------------------------------------------------------------
+
+@login_required
+def api_slots_vagos(request):
+    """Retorna slots vagos de um evento+polo — usado no form de novo contrato."""
+    evento_id = request.GET.get('evento')
+    polo_id   = request.GET.get('polo')
+
+    if not evento_id or not polo_id:
+        return JsonResponse([], safe=False)
+
+    slots = SlotProgramacao.objects.filter(
+        evento_id=evento_id,
+        polo_id=polo_id,
+        contrato__isnull=True,           # apenas vagos
+    ).order_by('data', 'horario_inicio')
+
+    data = [
+        {
+            'id':             s.pk,
+            'data':           str(s.data),                          # YYYY-MM-DD
+            'data_display':   s.data.strftime('%d/%m/%Y (%A)'),
+            'inicio':         s.horario_inicio.strftime('%H:%M'),
+            'fim':            s.horario_fim.strftime('%H:%M'),
+            'duracao':        s.duracao_minutos,
+            'label':          f"{s.data.strftime('%d/%m/%Y')} — {s.horario_inicio.strftime('%H:%M')} às {s.horario_fim.strftime('%H:%M')} ({s.duracao_minutos} min)",
+        }
+        for s in slots
+    ]
+    return JsonResponse(data, safe=False)
+
+
+# ---------------------------------------------------------------------------
 # Grade de Planejamento (Slots)
 # ---------------------------------------------------------------------------
 

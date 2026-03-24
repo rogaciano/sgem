@@ -92,7 +92,6 @@
                             {{ field.label }}
                             {% if field.field.required %}<span class="text-red-400 ml-0.5">*</span>{% endif %}
                         </label>
-                        {# Botão "+ Cadastrar" somente no campo atracao #}
                         {% if field.html_name == 'atracao' %}
                         <button type="button" id="btn-nova-atracao"
                             class="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition font-medium">
@@ -104,14 +103,13 @@
                         {% endif %}
                     </div>
 
-                    {# Select com classe para Select2 #}
                     {% if field.field.widget.input_type == 'select' %}
                     <div>
                         <select name="{{ field.html_name }}"
                                 id="{{ field.id_for_label }}"
-                                class="select2-field w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm"
+                                class="select2-field w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5"
                                 {% if field.field.required %}required{% endif %}>
-                            {% if not field.field.required %}<option value="">---------</option>{% endif %}
+                            {% if not field.field.required or not field.value %}<option value="">— Selecione... —</option>{% endif %}
                             {% for val, label in field.field.choices %}
                                 {% if val %}
                                 <option value="{{ val }}"
@@ -140,6 +138,36 @@
                     {% endfor %}
                     {% endif %}
                 </div>
+
+                {# ── Seletor de Slot: aparece após Polo, apenas em Novo Contrato ── #}
+                {% if not obj and field.html_name == 'polo' %}
+                <div id="slot-selector-wrapper" class="hidden">
+                    <div class="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-sm font-semibold text-orange-300">Data & Horário <span class="text-red-400">*</span></span>
+                            <span class="text-xs text-gray-500">(slots vagos da grade)</span>
+                        </div>
+                        <select id="id_slot_selector"
+                            class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                            <option value="">— Selecione Evento + Polo primeiro —</option>
+                        </select>
+                        <p id="slot-msg-vazio" class="hidden mt-2 text-xs text-yellow-400">
+                            ⚠️ Nenhum slot vago encontrado para este Evento + Polo.
+                        </p>
+                        <div id="slot-preview" class="hidden mt-3 rounded-xl bg-gray-800 border border-emerald-500/20 px-4 py-3 text-sm">
+                            <div class="flex flex-wrap gap-4">
+                                <span class="text-gray-400">📅 Data: <strong id="preview-data" class="text-white"></strong></span>
+                                <span class="text-gray-400">🕐 Início: <strong id="preview-inicio" class="text-orange-300"></strong></span>
+                                <span class="text-gray-400">🕓 Fim: <strong id="preview-fim" class="text-orange-300"></strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 {% endfor %}
 
                 {% if form.non_field_errors %}
@@ -204,9 +232,19 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1">UF <span class="text-red-400">*</span></label>
-                    <input type="text" name="uf_origem" id="nova-uf" required maxlength="2" placeholder="PE"
-                        style="text-transform:uppercase"
+                    <select name="uf_origem" id="nova-uf" required
                         class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                        <option value="">— UF —</option>
+                        <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                        <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                        <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                        <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                        <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                        <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                        <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                        <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                        <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                    </select>
                 </div>
             </div>
             <div>
@@ -236,15 +274,20 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/pt-BR.js"></script>
 <script>
 $(document).ready(function () {
     // ── Inicializa Select2 em todos os selects ──
-    $('.select2-field').select2({
-        theme: 'default',
-        language: 'pt-BR',
-        placeholder: 'Selecione...',
-        allowClear: false,
-        width: '100%',
+    $('.select2-field').each(function() {
+        const isAtracao = this.id === 'id_atracao';
+        $(this).select2({
+            language: 'pt-BR',
+            placeholder: isAtracao ? 'Buscar atração...' : 'Selecione...',
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: isAtracao ? 0 : 10,
+            dropdownParent: $('body'),
+        });
     });
 
     // ── Modal de Nova Atração ──
@@ -312,5 +355,85 @@ $(document).ready(function () {
         }
     });
 });
+</script>
+<script>
+// ── Slot Selector (apenas Novo Contrato) ──────────────────────────────────
+(function() {
+    const wrapper      = document.getElementById('slot-selector-wrapper');
+    if (!wrapper) return;
+
+    const slotSelect   = document.getElementById('id_slot_selector');
+    const msgVazio     = document.getElementById('slot-msg-vazio');
+    const inputData    = document.getElementById('id_data');
+    const inputInicio  = document.getElementById('id_horario_inicio');
+    const inputFim     = document.getElementById('id_horario_fim');
+
+    function setReadonly(on) {
+        [inputData, inputInicio, inputFim].forEach(el => {
+            if (!el) return;
+            el.readOnly = on;
+            el.style.opacity = on ? '0.6' : '';
+            el.style.pointerEvents = on ? 'none' : '';
+        });
+    }
+
+    function clearSlot() {
+        if (inputData)   inputData.value   = '';
+        if (inputInicio) inputInicio.value = '';
+        if (inputFim)    inputFim.value    = '';
+        setReadonly(false);
+    }
+
+    async function carregarSlots() {
+        const eventoId = document.getElementById('id_evento')?.value;
+        const poloId   = document.getElementById('id_polo')?.value;
+
+        slotSelect.innerHTML = '<option value="">— Selecione um slot vago —</option>';
+        msgVazio.classList.add('hidden');
+        clearSlot();
+
+        if (!eventoId || !poloId) {
+            wrapper.classList.add('hidden');
+            return;
+        }
+
+        wrapper.classList.remove('hidden');
+        slotSelect.innerHTML = '<option value="">⏳ Carregando slots...</option>';
+
+        try {
+            const resp  = await fetch(`{% url 'api_slots_vagos' %}?evento=${eventoId}&polo=${poloId}`);
+            const slots = await resp.json();
+
+            slotSelect.innerHTML = '<option value="">— Selecione a data/horário —</option>';
+
+            if (slots.length === 0) {
+                msgVazio.classList.remove('hidden');
+            } else {
+                msgVazio.classList.add('hidden');
+                slots.forEach(s => {
+                    const opt = new Option(s.label, s.id);
+                    opt.dataset.data   = s.data;
+                    opt.dataset.inicio = s.inicio;
+                    opt.dataset.fim    = s.fim;
+                    slotSelect.appendChild(opt);
+                });
+            }
+        } catch(e) {
+            slotSelect.innerHTML = '<option value="">Erro ao carregar slots</option>';
+        }
+    }
+
+    slotSelect.addEventListener('change', function() {
+        const opt = this.options[this.selectedIndex];
+        if (!opt.value) { clearSlot(); return; }
+
+        if (inputData)   inputData.value   = opt.dataset.data;
+        if (inputInicio) inputInicio.value = opt.dataset.inicio;
+        if (inputFim)    inputFim.value    = opt.dataset.fim;
+        setReadonly(true);
+    });
+
+    $('#id_evento, #id_polo').on('change', carregarSlots);
+})();
 </script>
 {% endblock %}

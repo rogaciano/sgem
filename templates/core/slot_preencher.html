@@ -60,7 +60,16 @@
             {% csrf_token %}
 
             <div>
-                <label class="block text-xs font-semibold text-gray-400 mb-1.5">Atração</label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-semibold text-gray-400">Atração</label>
+                    <button type="button" id="btn-nova-atracao"
+                        class="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Nova Atração
+                    </button>
+                </div>
                 <select name="atracao" id="id_atracao" required
                         class="w-full">
                     <option value="">— Buscar atração... —</option>
@@ -95,6 +104,83 @@
         </form>
     </div>
 </div>
+
+{# ── Modal Cadastro Rápido de Atração ── #}
+<div id="modal-nova-atracao" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-white">Nova Atração</h3>
+            </div>
+            <button id="btn-fechar-modal" class="text-gray-500 hover:text-gray-300 transition text-xl leading-none">&times;</button>
+        </div>
+
+        <div id="modal-erros" class="hidden mb-4 rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400"></div>
+
+        <form id="form-nova-atracao" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Nome <span class="text-red-400">*</span></label>
+                <input type="text" name="nome" id="nova-nome" required placeholder="Ex: Banda Forró do Nordeste"
+                    class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/20 transition">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Tipo <span class="text-red-400">*</span></label>
+                    <select name="tipo" id="nova-tipo" required
+                        class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                        <option value="banda">Banda</option>
+                        <option value="cantor">Cantor Solo</option>
+                        <option value="folclorico">Grupo Folclórico</option>
+                        <option value="orquestra">Orquestra</option>
+                        <option value="danca">Grupo de Dança</option>
+                        <option value="teatro">Teatro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">UF <span class="text-red-400">*</span></label>
+                    <select name="uf_origem" id="nova-uf" required
+                        class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+                        <option value="">— UF —</option>
+                        <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                        <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                        <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                        <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                        <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                        <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                        <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                        <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                        <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Cidade de Origem <span class="text-red-400">*</span></label>
+                <input type="text" name="cidade_origem" id="nova-cidade" required placeholder="Ex: Caruaru"
+                    class="w-full rounded-xl border border-white/10 bg-gray-800 text-white text-sm px-3.5 py-2.5 outline-none focus:border-orange-500/60 transition">
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" id="btn-salvar-atracao"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition flex items-center justify-center gap-2">
+                    <span id="btn-salvar-texto">Salvar e Selecionar</span>
+                    <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </button>
+                <button type="button" id="btn-cancelar-modal"
+                    class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -110,6 +196,68 @@ $(document).ready(function() {
             searching: () => 'Buscando...',
         },
         dropdownParent: $('body'),
+    });
+
+    // ── Modal de Nova Atração ──
+    const modal     = document.getElementById('modal-nova-atracao');
+    const formModal = document.getElementById('form-nova-atracao');
+    const errosDiv  = document.getElementById('modal-erros');
+    const spinner   = document.getElementById('btn-spinner');
+    const btnTexto  = document.getElementById('btn-salvar-texto');
+
+    function abrirModal() {
+        modal.classList.remove('hidden');
+        document.getElementById('nova-nome').focus();
+    }
+    function fecharModal() {
+        modal.classList.add('hidden');
+        formModal.reset();
+        errosDiv.classList.add('hidden');
+        errosDiv.textContent = '';
+    }
+
+    document.getElementById('btn-nova-atracao').addEventListener('click', abrirModal);
+    document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
+    document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) fecharModal();
+    });
+
+    formModal.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        spinner.classList.remove('hidden');
+        btnTexto.textContent = 'Salvando...';
+        errosDiv.classList.add('hidden');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const formData  = new FormData(formModal);
+
+        try {
+            const resp = await fetch('{% url "atracao_create_ajax" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken },
+                body: formData,
+            });
+            const data = await resp.json();
+
+            if (resp.ok) {
+                const select   = $('#id_atracao');
+                const newOption = new Option(data.text, data.id, true, true);
+                select.append(newOption).trigger('change');
+                fecharModal();
+            } else {
+                const msgs = Object.entries(data.errors || {})
+                    .map(([f, errs]) => errs.join(', ')).join('\n');
+                errosDiv.textContent = msgs || 'Erro ao salvar.';
+                errosDiv.classList.remove('hidden');
+            }
+        } catch (err) {
+            errosDiv.textContent = 'Erro de conexão. Tente novamente.';
+            errosDiv.classList.remove('hidden');
+        } finally {
+            spinner.classList.add('hidden');
+            btnTexto.textContent = 'Salvar e Selecionar';
+        }
     });
 });
 </script>

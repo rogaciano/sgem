@@ -171,6 +171,11 @@ class Contrato(models.Model):
         """
         errors = {}
 
+        # Guard: se campos obrigatórios estão ausentes, a validação de campo
+        # já vai capturar — não tenta acessar relações que podem ser None.
+        if not self.polo_id or not self.atracao_id or not self.data:
+            return
+
         if not self.horario_inicio or not self.horario_fim:
             return
 
@@ -186,14 +191,14 @@ class Contrato(models.Model):
                 horario_fim__gt=self.horario_inicio,
             ).first()
 
-        conflito_atracao = sobrepoe(qs.filter(atracao=self.atracao))
+        conflito_atracao = sobrepoe(qs.filter(atracao_id=self.atracao_id))
         if conflito_atracao:
             errors['horario_inicio'] = (
                 f'Esta atração já tem apresentação das {conflito_atracao.horario_inicio:%H:%M} '
                 f'às {conflito_atracao.horario_fim:%H:%M} no polo "{conflito_atracao.polo}" nesta data.'
             )
 
-        conflito_polo = sobrepoe(qs.filter(polo=self.polo))
+        conflito_polo = sobrepoe(qs.filter(polo_id=self.polo_id))
         if conflito_polo:
             errors['polo'] = (
                 f'Este polo já possui "{conflito_polo.atracao}" '
