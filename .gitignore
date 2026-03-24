@@ -25,3 +25,6 @@ media/
 # IDE
 .vscode/
 .idea/
+
+# AI Agent config
+.agent/
