@@ -469,7 +469,19 @@ def contrato_create(request):
     form = ContratoForm(request.POST or None)
     if form.is_valid():
         try:
-            form.save()
+            contrato = form.save()
+            # Vincula o slot vago correspondente (se existir) ao novo contrato
+            slot = SlotProgramacao.objects.filter(
+                evento=contrato.evento,
+                polo=contrato.polo,
+                data=contrato.data,
+                horario_inicio=contrato.horario_inicio,
+                horario_fim=contrato.horario_fim,
+                contrato__isnull=True,
+            ).first()
+            if slot:
+                slot.contrato = contrato
+                slot.save(update_fields=['contrato'])
             messages.success(request, 'Contrato criado com sucesso!')
             return redirect('contrato_list')
         except Exception as e:

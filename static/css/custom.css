@@ -1,1 +1,33 @@
 /* SGEM — Estilos customizados adicionais (Tailwind via CDN é suficiente) */
+
+/* ── Filtros (django-filter): tema dark ── */
+form select,
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form input[type="time"],
+form input[type="search"] {
+    background-color: rgb(31 41 55);   /* gray-800 */
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+form select:focus,
+form input[type="text"]:focus,
+form input[type="number"]:focus,
+form input[type="date"]:focus,
+form input[type="time"]:focus,
+form input[type="search"]:focus {
+    border-color: rgba(249,115,22,0.6); /* orange-500/60 */
+}
+
+form select option {
+    background-color: rgb(31 41 55);
+    color: #fff;
+}
