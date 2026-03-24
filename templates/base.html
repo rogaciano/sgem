@@ -28,69 +28,96 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-150 text-sm font-medium; }
-        .sidebar-link.active { @apply bg-orange-500/20 text-orange-400 border border-orange-500/30; }
+        .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 0.5rem; color: #9ca3af; font-size: 0.875rem; font-weight: 500; transition: all 150ms; text-decoration: none; }
+        .sidebar-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .sidebar-link.active { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+        /* Smooth sidebar transition */
+        #sidebar { transition: transform 300ms cubic-bezier(0.4,0,0.2,1); }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full text-white" x-data>
+<body class="h-full text-white bg-gray-950" x-data="{ sidebarOpen: false }">
+
+<!-- Mobile Overlay -->
+<div
+    x-show="sidebarOpen"
+    x-transition:enter="transition-opacity duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition-opacity duration-300"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @click="sidebarOpen = false"
+    class="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden"
+    style="display:none">
+</div>
 
 <div class="flex h-screen overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside class="w-64 flex-shrink-0 bg-gray-900 border-r border-white/10 flex flex-col">
+    <!-- ═══════════════════════════════════════════════════════ SIDEBAR -->
+    <aside id="sidebar"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="fixed lg:static inset-y-0 left-0 z-30 w-64 flex-shrink-0 bg-gray-900 border-r border-white/10 flex flex-col -translate-x-full lg:translate-x-0">
+
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">C</div>
-            <div>
-                <p class="text-sm font-bold text-white leading-none">SGEM</p>
-                <p class="text-xs text-gray-500 mt-0.5">Caruaru · PE</p>
+        <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">C</div>
+                <div>
+                    <p class="text-sm font-bold text-white leading-none">SGEM</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Caruaru · PE</p>
+                </div>
             </div>
+            <!-- Fechar sidebar no mobile -->
+            <button @click="sidebarOpen = false" class="lg:hidden text-gray-500 hover:text-white p-1 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
 
         <!-- Nav -->
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest px-4 mb-2">Principal</p>
-            <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <a href="{% url 'dashboard' %}" @click="sidebarOpen = false" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 Dashboard
             </a>
-            <a href="{% url 'calendario' %}" class="sidebar-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <a href="{% url 'calendario' %}" @click="sidebarOpen = false" class="sidebar-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 Calendário
             </a>
-            <a href="{% url 'programacao' %}" class="sidebar-link {% if request.resolver_match.url_name == 'programacao' %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            <a href="{% url 'programacao' %}" @click="sidebarOpen = false" class="sidebar-link {% if request.resolver_match.url_name == 'programacao' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 Programação
             </a>
-            <a href="{% url 'grade' %}" class="sidebar-link {% if request.resolver_match.url_name == 'grade' or 'slot' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <a href="{% url 'grade' %}" @click="sidebarOpen = false" class="sidebar-link {% if request.resolver_match.url_name == 'grade' or 'slot' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 Grade
             </a>
 
-            <a href="{% url 'evento_list' %}" class="sidebar-link {% if 'evento' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest px-4 mb-2 pt-3">Cadastros</p>
+            <a href="{% url 'evento_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'evento' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 Eventos
             </a>
-            <a href="{% url 'contrato_list' %}" class="sidebar-link {% if 'contrato' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <a href="{% url 'contrato_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'contrato' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 Contratos
             </a>
-            <a href="{% url 'polo_list' %}" class="sidebar-link {% if 'polo' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <a href="{% url 'polo_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'polo' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 Polos
             </a>
-            <a href="{% url 'atracao_list' %}" class="sidebar-link {% if 'atracao' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+            <a href="{% url 'atracao_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'atracao' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                 Atrações
             </a>
-            <a href="{% url 'pessoa_list' %}" class="sidebar-link {% if 'pessoa' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <a href="{% url 'pessoa_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'pessoa' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 Equipe
             </a>
             {% if request.user.is_superuser %}
-            <a href="{% url 'usuario_list' %}" class="sidebar-link {% if 'usuario' in request.resolver_match.url_name %}active{% endif %}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            <a href="{% url 'usuario_list' %}" @click="sidebarOpen = false" class="sidebar-link {% if 'usuario' in request.resolver_match.url_name %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 Usuários
             </a>
             {% endif %}
@@ -114,23 +141,28 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- ═══════════════════════════════════════════════════ MAIN CONTENT -->
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+
         <!-- Topbar -->
-        <header class="h-14 flex items-center justify-between px-6 bg-gray-900/50 border-b border-white/10 backdrop-blur">
+        <header class="h-14 flex items-center justify-between px-4 lg:px-6 bg-gray-900/50 border-b border-white/10 backdrop-blur flex-shrink-0">
             <div class="flex items-center gap-3">
-                <h1 class="text-sm font-semibold text-white">{% block page_title %}SGEM{% endblock %}</h1>
+                <!-- Hamburguer (mobile only) -->
+                <button @click="sidebarOpen = true" class="lg:hidden text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h1 class="text-sm font-semibold text-white truncate">{% block page_title %}SGEM{% endblock %}</h1>
             </div>
-            <div class="flex items-center gap-2 text-xs text-gray-500">
-                <span>Prefeitura de Caruaru</span>
-                <span class="text-gray-700">·</span>
-                <span class="text-orange-400 font-medium">Sistema de Gestão de Eventos</span>
+            <div class="hidden sm:flex items-center gap-2 text-xs text-gray-500">
+                <span class="hidden md:inline">Prefeitura de Caruaru</span>
+                <span class="text-gray-700 hidden md:inline">·</span>
+                <span class="text-orange-400 font-medium">SGEM</span>
             </div>
         </header>
 
         <!-- Django Messages -->
         {% if messages %}
-        <div class="px-6 pt-4 space-y-2" id="messages-container">
+        <div class="px-4 lg:px-6 pt-4 space-y-2" id="messages-container">
             {% for message in messages %}
             <div x-data="{ show: true }" x-show="show" x-transition
                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
@@ -138,14 +170,14 @@
                  {% elif message.tags == 'error' %}bg-red-500/20 text-red-400 border border-red-500/30
                  {% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
                 <span class="flex-1">{{ message }}</span>
-                <button @click="show = false" class="opacity-60 hover:opacity-100">✕</button>
+                <button @click="show = false" class="opacity-60 hover:opacity-100 flex-shrink-0">✕</button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
         <!-- Page Content -->
-        <main class="flex-1 overflow-y-auto p-6 bg-gray-950">
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-950">
             {% block content %}{% endblock %}
         </main>
     </div>
