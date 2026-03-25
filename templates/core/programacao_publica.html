@@ -76,17 +76,17 @@
                     <div class="space-y-2">
                         {% for polo, contratos in dia.polos.items %}
                         <div class="flex items-start gap-2">
-                            <span class="text-xs text-gray-500 font-medium whitespace-nowrap mt-0.5 w-28 flex-shrink-0 truncate">
+                            <span class="text-xs text-gray-500 font-medium whitespace-nowrap mt-0.5 w-36 flex-shrink-0">
                                 {% if 'Pátio' in polo.nome %}
-                                    🏟️ Pátio
+                                    🏟️ {{ polo.nome }}
                                 {% elif 'Azulão' in polo.nome %}
-                                    💙 Azulão
+                                    💙 {{ polo.nome }}
                                 {% elif 'Moura' in polo.nome %}
-                                    🏺 A. Moura
+                                    🏺 {{ polo.nome }}
                                 {% elif 'Quadrilha' in polo.nome %}
-                                    📍 Quadrilhas
+                                    📍 {{ polo.nome }}
                                 {% else %}
-                                    📍 {{ polo.nome|truncatechars:10 }}
+                                    📍 {{ polo.nome }}
                                 {% endif %}
                             </span>
                             <div class="flex flex-wrap gap-1.5">
