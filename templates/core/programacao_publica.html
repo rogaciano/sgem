@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programação — São João de Caruaru</title>
+    <meta name="description" content="Programação oficial do São João de Caruaru. Confira datas, horários e atrações.">
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-gray-950 text-white">
+
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">C</div>
+            <div>
+                <p class="text-sm font-bold text-white leading-none">Programação</p>
+                <p class="text-xs text-gray-500 mt-0.5">São João de Caruaru</p>
+            </div>
+        </div>
+        <span class="text-xs text-gray-600">Consulta pública</span>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- Filtro por Evento -->
+    <div class="flex items-center gap-3 mb-6 flex-wrap">
+        <a href="?"
+           class="px-4 py-2 rounded-xl text-sm font-medium transition
+                  {% if not evento_selecionado %}bg-orange-600 text-white{% else %}bg-gray-800 text-gray-400 hover:text-white{% endif %}">
+            Todos os Eventos
+        </a>
+        {% for ev in eventos %}
+        <a href="?evento={{ ev.pk }}"
+           class="px-4 py-2 rounded-xl text-sm font-medium transition
+                  {% if evento_selecionado == ev.pk %}bg-orange-600 text-white{% else %}bg-gray-800 text-gray-400 hover:text-white{% endif %}">
+            {{ ev.nome }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Legenda de Polos -->
+    <div class="flex flex-wrap gap-3 mb-6">
+        <span class="text-xs text-gray-500 self-center">Polos:</span>
+        <span class="flex items-center gap-1.5 text-xs text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>Pátio de Eventos</span>
+        <span class="flex items-center gap-1.5 text-xs text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>Polo Azulão</span>
+        <span class="flex items-center gap-1.5 text-xs text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>Alto do Moura</span>
+        <span class="flex items-center gap-1.5 text-xs text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Outros</span>
+    </div>
+
+    <!-- Programação -->
+    {% if dias %}
+    <div class="space-y-2">
+        {% for dia in dias %}
+        <div class="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-stretch">
+
+                <!-- Data -->
+                <div class="w-28 flex-shrink-0 flex flex-col items-center justify-center py-4 bg-gray-800/50 border-r border-white/10">
+                    <p class="text-xs text-gray-500 font-medium uppercase">{{ dia.data|date:"D" }}</p>
+                    <p class="text-xl font-bold text-white leading-tight">{{ dia.data|date:"d" }}</p>
+                    <p class="text-xs text-orange-400 font-semibold">{{ dia.data|date:"M/Y" }}</p>
+                    <div class="mt-2 flex items-center gap-1">
+                        <span class="text-xs font-bold text-white">{{ dia.total }}</span>
+                        <span class="text-xs text-gray-600">atr.</span>
+                    </div>
+                </div>
+
+                <!-- Atrações -->
+                <div class="flex-1 p-4">
+                    <div class="space-y-2">
+                        {% for polo, contratos in dia.polos.items %}
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs text-gray-500 font-medium whitespace-nowrap mt-0.5 w-28 flex-shrink-0 truncate">
+                                {% if 'Pátio' in polo.nome %}
+                                    🏟️ Pátio
+                                {% elif 'Azulão' in polo.nome %}
+                                    💙 Azulão
+                                {% elif 'Moura' in polo.nome %}
+                                    🏺 A. Moura
+                                {% elif 'Quadrilha' in polo.nome %}
+                                    📍 Quadrilhas
+                                {% else %}
+                                    📍 {{ polo.nome|truncatechars:10 }}
+                                {% endif %}
+                            </span>
+                            <div class="flex flex-wrap gap-1.5">
+                                {% for c in contratos %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
+                                       {% if 'Pátio' in polo.nome %}bg-orange-500/15 text-orange-300 border border-orange-500/25
+                                       {% elif 'Azulão' in polo.nome %}bg-violet-500/15 text-violet-300 border border-violet-500/25
+                                       {% elif 'Moura' in polo.nome %}bg-cyan-500/15 text-cyan-300 border border-cyan-500/25
+                                       {% else %}bg-emerald-500/15 text-emerald-300 border border-emerald-500/25{% endif %}">
+                                    <span>{{ c.atracao.nome }}</span>
+                                    <span class="opacity-60">{{ c.horario_inicio|time:"H:i" }}</span>
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <p class="text-gray-500 text-sm">Nenhuma programação disponível no momento.</p>
+    </div>
+    {% endif %}
+</main>
+
+<!-- Footer -->
+<footer class="max-w-5xl mx-auto px-4 py-8 text-center border-t border-white/10 mt-8">
+    <p class="text-xs text-gray-600">Prefeitura de Caruaru · SGEM — Sistema de Gestão de Eventos Musicais</p>
+</footer>
+
+</body>
+</html>

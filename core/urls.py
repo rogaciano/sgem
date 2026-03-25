@@ -59,4 +59,7 @@ urlpatterns = [
     path('usuarios/<int:pk>/editar/', views.usuario_edit, name='usuario_edit'),
     path('usuarios/<int:pk>/senha/', views.usuario_senha, name='usuario_senha'),
     path('usuarios/<int:pk>/excluir/', views.usuario_delete, name='usuario_delete'),
+
+    # Página Pública (sem login — somente leitura)
+    path('p/programacao/', views.programacao_publica, name='programacao_publica'),
 ]

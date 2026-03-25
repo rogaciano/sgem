@@ -49,12 +49,6 @@
 
             <!-- Coluna: Gauge barra + Atrações -->
             <div class="flex-1 p-4">
-                <!-- Barra gauge do dia -->
-                <div class="h-1 bg-gray-800 rounded-full mb-3 overflow-hidden">
-                    <div class="h-full rounded-full bg-gradient-to-r from-orange-500 via-amber-400 to-yellow-400 transition-all duration-700"
-                         style="width: {{ dia.pct }}%"></div>
-                </div>
-
                 <!-- Atrações agrupadas por Polo -->
                 <div class="space-y-2">
                     {% for polo, contratos in dia.polos.items %}

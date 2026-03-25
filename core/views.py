@@ -867,3 +867,41 @@ def usuario_delete(request, pk):
             messages.success(request, f'Usuário "{nome}" excluído.')
     return redirect('usuario_list')
 
+
+# ---------------------------------------------------------------------------
+# Página Pública: Programação (sem login, somente leitura)
+# ---------------------------------------------------------------------------
+
+from django.views.decorators.http import require_GET
+
+@require_GET
+def programacao_publica(request):
+    """Página pública de consulta da programação. Sem login, sem links internos."""
+    from collections import defaultdict
+
+    evento_id = request.GET.get('evento')
+    qs = Contrato.objects.select_related('atracao', 'polo', 'evento').order_by(
+        'data', 'polo__nome', 'horario_inicio'
+    )
+    if evento_id:
+        qs = qs.filter(evento_id=evento_id)
+
+    por_data = defaultdict(lambda: defaultdict(list))
+    for c in qs:
+        por_data[c.data][c.polo].append(c)
+
+    dias = []
+    for data in sorted(por_data.keys()):
+        polos_dia = por_data[data]
+        total_dia = sum(len(v) for v in polos_dia.values())
+        dias.append({
+            'data': data,
+            'polos': dict(polos_dia),
+            'total': total_dia,
+        })
+
+    return render(request, 'core/programacao_publica.html', {
+        'dias': dias,
+        'eventos': Evento.objects.all(),
+        'evento_selecionado': int(evento_id) if evento_id else None,
+    })
